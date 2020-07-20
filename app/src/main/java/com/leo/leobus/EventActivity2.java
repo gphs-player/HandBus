@@ -28,6 +28,7 @@ public class EventActivity2 extends BaseActivity implements View.OnClickListener
         switch (v.getId()) {
             case R.id.sendString:
                 HandBus.getInstance().post(new StringEvent());
+//                new Thread(() -> HandBus.getInstance().post(new StringEvent()),"Sub Thread").start();
                 break;
             case R.id.sendInt:
                 HandBus.getInstance().post(new IntEvent());

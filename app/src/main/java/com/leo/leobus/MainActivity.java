@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.leo.bus.HandBus;
 import com.leo.bus.HandLogger;
 import com.leo.bus.Receive;
+import com.leo.bus.ThreadMode;
 import com.leo.leobus.event.IntEvent;
 import com.leo.leobus.event.JsonEvent;
 import com.leo.leobus.event.OtherEvent;
@@ -37,9 +38,9 @@ public class MainActivity extends BaseActivity {
         HandBus.getInstance().unregister(this);
     }
 
-    @Receive
+    @Receive(threadMode = ThreadMode.THREAD_BACKGROUND)
     public void doStringEvent(StringEvent msg) {
-        log(this.toString() +"--" + msg +"\n休眠2秒");
+        log(this.toString() +"--" + msg +"\n休眠2秒 in " + Thread.currentThread().getName());
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {

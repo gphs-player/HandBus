@@ -6,6 +6,7 @@ import android.view.View;
 
 import com.leo.bus.HandBus;
 import com.leo.bus.Receive;
+import com.leo.bus.ThreadMode;
 import com.leo.leobus.event.IntEvent;
 import com.leo.leobus.event.JsonEvent;
 import com.leo.leobus.event.OtherEvent;
@@ -34,9 +35,9 @@ public class EventActivity1 extends BaseActivity {
         finish();
     }
 
-    @Receive
+    @Receive(threadMode = ThreadMode.THREAD_BACKGROUND)
     public void doEventString(StringEvent msg) {
-        log(this.toString() +"--" + msg +"\n休眠5秒");
+        log(this.toString() +"--" + msg +"\n休眠5秒 in " + Thread.currentThread().getName());
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
