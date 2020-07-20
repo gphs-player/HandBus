@@ -7,7 +7,8 @@ import java.util.concurrent.Executors;
 /**
  * <p>Date:2020/7/20.4:46 PM</p>
  * <p>Author:leo</p>
- * <p>Desc:</p>
+ * <p>Desc:子线程处理事件
+ * </p>
  */
 public class BackGroundHandler implements Runnable,Process{
 

@@ -11,12 +11,14 @@ import java.util.LinkedList;
 /**
  * <p>Date:2020/7/20.4:08 PM</p>
  * <p>Author:leo</p>
- * <p>Desc:</p>
+ * <p>Desc: 主线程处理事件
+ * </p>
  */
-public class MainThreadHandler extends Handler implements Process{
+public class MainThreadHandler extends Handler implements Process {
 
     private final HandBus mBus;
     private LinkedList<PendingEvent> mQueue = new LinkedList<>();
+
     public MainThreadHandler(HandBus bus) {
         super(Looper.getMainLooper());
         this.mBus = bus;
@@ -39,7 +41,7 @@ public class MainThreadHandler extends Handler implements Process{
         pendingEvent.event = eventEntity;
         pendingEvent.handler = eventHandler;
         mQueue.offer(pendingEvent);
-        if (!sendMessage(obtainMessage())){
+        if (!sendMessage(obtainMessage())) {
             throw new BusException("主线程处理消息失败");
         }
     }

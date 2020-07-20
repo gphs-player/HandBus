@@ -1,6 +1,5 @@
 package com.leo.bus;
 
-import android.os.Handler;
 import android.os.Looper;
 
 import java.lang.reflect.InvocationTargetException;
@@ -11,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>Date:2020/7/17.3:15 PM</p>
@@ -19,19 +19,8 @@ import java.util.Map;
  */
 public class HandBus {
 
-    static {
-        HandLogger.logWarn("init HandBus");
-    }
-
-
-
-
     //外部类加载的时候不会加载内部类
     private static class Holder {
-        static {
-            HandLogger.logWarn("init HandBus.Holder");
-        }
-
         static HandBus INSTANCE = new HandBus();
     }
 
@@ -41,7 +30,6 @@ public class HandBus {
     }
 
     public static HandBus getInstance() {
-        HandLogger.logDebug("getInstance : " + Holder.INSTANCE.toString());
         return Holder.INSTANCE;
     }
 
@@ -80,7 +68,6 @@ public class HandBus {
             //已经有接受者，则继续添加新的接收者
             if (mEventMappings.containsKey(eventType.toString())) {
                 List<EventHandler> receivers = mEventMappings.get(eventType.toString());
-//                EventHandler eventHandler = new EventHandler(receiver, eventMethod);
                 // 可能尚未注册过 或者已经清空
                 if (receivers == null || receivers.size() == 0) {
                     receivers = new ArrayList<>();
@@ -121,7 +108,7 @@ public class HandBus {
                 if (method.getParameterTypes().length == 1) {
                     Receive annotation = method.getAnnotation(Receive.class);
                     EventHandler handler = new EventHandler(target,method);
-                    handler.threadMode = annotation.threadMode();
+                    handler.threadMode = Objects.requireNonNull(annotation).threadMode();
                     handler.eventType = method.getParameterTypes()[0];
                     result.add(handler);
                 } else {
@@ -205,13 +192,5 @@ public class HandBus {
 
     private void log(String msg) {
         HandLogger.logDebug(msg);
-    }
-
-    private void logE(String msg) {
-        HandLogger.logError(msg);
-    }
-
-    private void logW(String msg) {
-        HandLogger.logWarn(msg);
     }
 }
