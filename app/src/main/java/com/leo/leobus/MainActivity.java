@@ -39,7 +39,13 @@ public class MainActivity extends BaseActivity {
 
     @Receive
     public void doStringEvent(StringEvent msg) {
-        log(this.toString() +"--" + msg);
+        log(this.toString() +"--" + msg +"\n休眠2秒");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        log(this.toString() +"--" + msg +"\n休眠结束");
 
     }
     @Receive

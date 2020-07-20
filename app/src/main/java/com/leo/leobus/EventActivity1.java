@@ -1,24 +1,15 @@
 package com.leo.leobus;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import com.leo.bus.HandBus;
-import com.leo.bus.HandLogger;
 import com.leo.bus.Receive;
 import com.leo.leobus.event.IntEvent;
 import com.leo.leobus.event.JsonEvent;
 import com.leo.leobus.event.OtherEvent;
 import com.leo.leobus.event.StringEvent;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-
-import java.lang.reflect.Field;
 
 public class EventActivity1 extends BaseActivity {
 
@@ -45,7 +36,13 @@ public class EventActivity1 extends BaseActivity {
 
     @Receive
     public void doEventString(StringEvent msg) {
-        log(this.toString() +"--" + msg);
+        log(this.toString() +"--" + msg +"\n休眠5秒");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        log(this.toString() +"--" + msg +"\n休眠结束");
 
     }
     @Receive
@@ -55,7 +52,12 @@ public class EventActivity1 extends BaseActivity {
 
     @Receive
     public void doEventJson(JsonEvent msg) {
-        log(this.toString() +"--" + msg);
+        log(this.toString() +"--" + msg +"\n休眠3秒");
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
     @Receive
     public void doEventOther(OtherEvent msg) {

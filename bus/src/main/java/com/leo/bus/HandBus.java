@@ -44,7 +44,7 @@ public class HandBus {
 
     /**
      * 根据事件类型去找接收者，不必遍历
-     *  Event - <Activity,Method>
+     * Event - <Activity,Method>
      */
     private Map<String, List<EventHandler>> mEventMappings = new HashMap<>();
 
@@ -60,7 +60,7 @@ public class HandBus {
         log("register receiver" + receiver.getClass().getCanonicalName());
         List<Method> eventMethods = findEventMethod(receiver.getClass());
         addReceiver(receiver, eventMethods);
-        log("register ： "+ mEventMappings);
+        log("register ： " + mEventMappings);
     }
 
     private void addReceiver(Object receiver, Collection<Method> eventMethods) {
@@ -71,16 +71,24 @@ public class HandBus {
             //已经有接受者，则继续添加新的接收者
             if (mEventMappings.containsKey(eventType)) {
                 List<EventHandler> receivers = mEventMappings.get(eventType);
+                EventHandler eventHandler = new EventHandler(receiver, eventMethod);
                 // 可能尚未注册过 或者已经清空
-                if (receivers == null || receivers.isEmpty()){
+                if (receivers == null || receivers.size() == 0) {
                     receivers = new ArrayList<>();
-                    mEventMappings.put(eventType,receivers);
+                    mEventMappings.put(eventType, receivers);
+                    receivers.add(eventHandler);
+                } else {
+                    //已经注册，忘记反注册, 报错提醒
+                    if (receivers.contains(eventHandler)) {
+                        throw new IllegalStateException(receiver.getClass().getName() + " already  register in HandBus");
+                    } else {
+                        receivers.add(eventHandler);
+                    }
                 }
-                receivers.add(new EventHandler(receiver,eventMethod));
             } else {
                 //没有接收者,新添加
                 List<EventHandler> receivers = new ArrayList<>();
-                receivers.add(new EventHandler(receiver,eventMethod));
+                receivers.add(new EventHandler(receiver, eventMethod));
                 mEventMappings.put(eventType, receivers);
             }
         }
@@ -119,6 +127,7 @@ public class HandBus {
     public void unregister(Object receiver) {
         if (receiver == null) return;
         log("unregister receiver" + receiver.getClass().getCanonicalName());
+
         for (String eventKey : mEventMappings.keySet()) {
             List<EventHandler> eventHandlers = mEventMappings.get(eventKey);
             if (eventHandlers == null || eventHandlers.size() == 0) continue;
@@ -133,7 +142,7 @@ public class HandBus {
             }
 
         }
-        log("unregister ： "+ mEventMappings);
+        log("unregister ： " + mEventMappings);
     }
 
 
@@ -143,9 +152,9 @@ public class HandBus {
         if (receiverMaps == null || receiverMaps.size() == 0) return;
         //所有可以处理该事件的接收者
         for (EventHandler receiver : receiverMaps) {
-            log(event.getClass().toString() +" 事件处理 ：" + receiver.target.toString());
+            log(event.getClass().toString() + " 事件处理 ：" + receiver.target.toString());
             try {
-                receiver.method.invoke(receiver.target,event);
+                receiver.method.invoke(receiver.target, event);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             } catch (InvocationTargetException e) {
