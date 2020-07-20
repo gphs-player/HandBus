@@ -15,7 +15,7 @@ import com.leo.leobus.event.JsonEvent;
 import com.leo.leobus.event.OtherEvent;
 import com.leo.leobus.event.StringEvent;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this,EventActivity1.class));
-//                HandBus.getInstance().post(" msg from bus ");
             }
         });
     }
@@ -39,24 +38,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Receive
-    public void showSomething(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    }
-
-    @Receive
     public void doStringEvent(StringEvent msg) {
-        Toast.makeText(this, "StringEvent", Toast.LENGTH_SHORT).show();
+        log(this.toString() +"--" + msg);
+
     }
     @Receive
     public void doIntEvent(IntEvent msg) {
-        Toast.makeText(this, "IntEvent", Toast.LENGTH_SHORT).show();
+        log(this.toString() +"--" + msg);
     }
+
     @Receive
     public void doJsonEvent(JsonEvent msg) {
-        Toast.makeText(this, "JsonEvent", Toast.LENGTH_SHORT).show();
+        log(this.toString() +"--" + msg);
     }
     @Receive
     public void doOtherEvent(OtherEvent msg) {
-        Toast.makeText(this, "OtherEvent", Toast.LENGTH_SHORT).show();
+        log(this.toString() +"--" + msg);
     }
 }

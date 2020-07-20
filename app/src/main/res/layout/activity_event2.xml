@@ -7,16 +7,23 @@
     android:layout_height="match_parent"
     tools:context=".EventActivity1">
     <Button
-        android:text="Jump to Event2"
-        android:id="@+id/jumpEvent"
-        android:onClick="jumpEvent"
+        android:text="发送事件StringEvent"
+        android:id="@+id/sendString"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-
     <Button
-        android:text="Jump to Event2 and Finish"
-        android:onClick="jumpEventFinish"
+        android:text="发送事件IntEvent"
+        android:id="@+id/sendInt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-
+    <Button
+        android:text="发送事件JsonEvent"
+        android:id="@+id/sendJson"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:text="发送事件OtherEvent"
+        android:id="@+id/sendOther"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>

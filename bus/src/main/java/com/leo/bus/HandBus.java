@@ -3,8 +3,10 @@ package com.leo.bus;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,20 +42,11 @@ public class HandBus {
     // 容器
     ///////////////////////////////////////////////////////////////////////////
 
-    //所有接受者
     /**
-     * KEY- class的全路径名称的hashCode
+     * 根据事件类型去找接收者，不必遍历
+     *  Event - <Activity,Method>
      */
-    private Map<Integer, Object> mReceivers = new HashMap<>();
-
-    /**
-     *
-     *  事件-接受者  映射关系
-     *  根据事件类型去找接受者，不必遍历
-     */
-    //TODO 区分
-    private Map<String, Map<Integer, Object>> mEventMappings = new HashMap<>();
-
+    private Map<String, List<EventHandler>> mEventMappings = new HashMap<>();
 
     ///////////////////////////////////////////////////////////////////////////
     // API
@@ -65,11 +58,59 @@ public class HandBus {
     public void register(Object receiver) {
         if (receiver == null) return;
         log("register receiver" + receiver.getClass().getCanonicalName());
-        int key = receiver.getClass().getName().hashCode();
-        if (!mReceivers.containsKey(key)) {
-            mReceivers.put(key, receiver);
+        List<Method> eventMethods = findEventMethod(receiver.getClass());
+        addReceiver(receiver, eventMethods);
+        log("register ： "+ mEventMappings);
+    }
+
+    private void addReceiver(Object receiver, Collection<Method> eventMethods) {
+        for (Method eventMethod : eventMethods) {
+            Class<?>[] parameterTypes = eventMethod.getParameterTypes();
+            //以事件类型维护映射关系
+            String eventType = parameterTypes[0].toString();
+            //已经有接受者，则继续添加新的接收者
+            if (mEventMappings.containsKey(eventType)) {
+                List<EventHandler> receivers = mEventMappings.get(eventType);
+                // 可能尚未注册过 或者已经清空
+                if (receivers == null || receivers.isEmpty()){
+                    receivers = new ArrayList<>();
+                    mEventMappings.put(eventType,receivers);
+                }
+                receivers.add(new EventHandler(receiver,eventMethod));
+            } else {
+                //没有接收者,新添加
+                List<EventHandler> receivers = new ArrayList<>();
+                receivers.add(new EventHandler(receiver,eventMethod));
+                mEventMappings.put(eventType, receivers);
+            }
         }
-        log(String.valueOf(mReceivers.size()));
+    }
+
+    private List<Method> findEventMethod(Class<?> aClass) {
+        List<Method> result = new ArrayList<>();
+        Method[] methods = aClass.getDeclaredMethods();
+        //遍历接受者的所有方法
+        for (Method method : methods) {
+            //方法确定是public的
+            if (method.getAnnotation(Receive.class) != null) {
+                log("find method " + method.getName()
+                        + " for receiver " + aClass.getCanonicalName());
+//                Receive annotation = method.getAnnotation(Receive.class);
+                //方法必须public修饰
+                if ((method.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
+                    throw new IllegalStateException("@Receive 修饰的方法必须为public");
+                }
+                //方法参数只能是1个
+                if (method.getParameterTypes().length == 1) {
+                    result.add(method);
+                } else {
+                    throw new IllegalStateException("@Receive 修饰的方法参数必须为1");
+                }
+            } else {
+                log("method  " + method.getName() + " in " + aClass.getCanonicalName() + " ignored");
+            }
+        }
+        return result;
     }
 
     /**
@@ -78,49 +119,40 @@ public class HandBus {
     public void unregister(Object receiver) {
         if (receiver == null) return;
         log("unregister receiver" + receiver.getClass().getCanonicalName());
-        int key = receiver.getClass().getName().hashCode();
-        mReceivers.remove(key);
-        log(String.valueOf(mReceivers.size()));
+        for (String eventKey : mEventMappings.keySet()) {
+            List<EventHandler> eventHandlers = mEventMappings.get(eventKey);
+            if (eventHandlers == null || eventHandlers.size() == 0) continue;
+            int receiverSize = eventHandlers.size();
+            for (int i = 0; i < receiverSize; i++) {
+                EventHandler eventHandler = eventHandlers.get(i);
+                if (eventHandler.target.getClass().toString().equals(receiver.getClass().toString())) {
+                    eventHandlers.remove(eventHandler);
+                    i--;
+                    receiverSize--;
+                }
+            }
+
+        }
+        log("unregister ： "+ mEventMappings);
     }
 
 
     public void post(Object event) {
-        Collection<Object> receivers = mReceivers.values();
-        for (Object receiver : receivers) {
-            Method[] methods = receiver.getClass().getDeclaredMethods();
-            //遍历接受者的所有方法
-            for (Method method : methods) {
-                //方法确定是public的
-                if (method.getAnnotation(Receive.class) != null) {
-                    log("find method " + method.getName()
-                            + " for receiver " + receiver.getClass().getCanonicalName());
-                    Receive annotation = method.getAnnotation(Receive.class);
-                    //方法必须public修饰
-                    if ((method.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
-                        throw new IllegalStateException("Receive修饰的方法必须为public");
-                    }
-                    //方法参数只能是1个
-                    if (method.getParameterTypes().length == 1) {
-                        Class<?> parameterType = method.getParameterTypes()[0];
-                        if (parameterType == event.getClass()) {
-                            try {
-                                method.invoke(receiver, event);
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                            } catch (InvocationTargetException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            log(method.getName() + " \t-Parameter Type didn't matches ,ignored");
-                        }
-                    } else {
-                        throw new IllegalStateException("Receive修饰的方法参数必须为1");
-                    }
-                } else {
-                    log("method  " + method.getName() + " in " + receiver.getClass().getCanonicalName() + " ignored");
-                }
+        String eventKey = event.getClass().toString();
+        List<EventHandler> receiverMaps = mEventMappings.get(eventKey);
+        if (receiverMaps == null || receiverMaps.size() == 0) return;
+        //所有可以处理该事件的接收者
+        for (EventHandler receiver : receiverMaps) {
+            log(event.getClass().toString() +" 事件处理 ：" + receiver.target.toString());
+            try {
+                receiver.method.invoke(receiver.target,event);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
             }
         }
+
     }
 
     private void log(String msg) {
