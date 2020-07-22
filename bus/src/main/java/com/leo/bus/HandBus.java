@@ -55,10 +55,8 @@ public class HandBus {
      */
     public void register(Object receiver) {
         if (receiver == null) return;
-        log("register receiver" + receiver.getClass().getCanonicalName());
         List<EventHandler> eventMethods = findEventMethod(receiver);
         addReceiver(receiver, eventMethods);
-        log("register ： " + mEventMappings);
     }
 
     private void addReceiver(Object receiver, Collection<EventHandler> eventMethods) {
@@ -126,7 +124,6 @@ public class HandBus {
      */
     public void unregister(Object receiver) {
         if (receiver == null) return;
-        log("unregister receiver" + receiver.getClass().getCanonicalName());
 
         for (String eventKey : mEventMappings.keySet()) {
             List<EventHandler> eventHandlers = mEventMappings.get(eventKey);
@@ -141,19 +138,16 @@ public class HandBus {
                 }
             }
         }
-        log("unregister ： " + mEventMappings);
     }
 
 
     public void post(final Object event) {
-        log(event.toString() +" post in "+Thread.currentThread().getName());
         boolean isMainThread = Looper.myLooper() == Looper.getMainLooper();
         String eventKey = event.getClass().toString();
         List<EventHandler> receiverMaps = mEventMappings.get(eventKey);
         if (receiverMaps == null || receiverMaps.size() == 0) return;
         //所有可以处理该事件的接收者
         for (final EventHandler receiver : receiverMaps) {
-            log(event.getClass().toString() + " 事件处理 ：" + receiver.target.toString());
             switch (receiver.threadMode) {
                 default:
                 case ThreadMode.THREAD_DEFAULT:
@@ -177,7 +171,6 @@ public class HandBus {
                     break;
             }
         }
-
     }
 
      void runMethodDirect(EventHandler receiver, Object event) {

@@ -1,11 +1,17 @@
 package com.leo.leobus;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
+import android.util.Printer;
+import android.view.Choreographer;
 import android.view.View;
-import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 import com.leo.bus.HandBus;
 import com.leo.bus.HandLogger;
@@ -16,14 +22,18 @@ import com.leo.leobus.event.JsonEvent;
 import com.leo.leobus.event.OtherEvent;
 import com.leo.leobus.event.StringEvent;
 
+
 public class MainActivity extends BaseActivity {
 
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         HandLogger.logDebug(HandBus.class.toString());
         HandBus.getInstance().register(this);
+//        EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
         findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -14,11 +14,13 @@ import com.leo.leobus.event.StringEvent;
 
 public class EventActivity1 extends BaseActivity {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event1);
         HandBus.getInstance().register(this);
+
     }
 
     @Override
@@ -39,7 +41,7 @@ public class EventActivity1 extends BaseActivity {
     public void doEventString(StringEvent msg) {
         log(this.toString() +"--" + msg +"\n休眠5秒 in " + Thread.currentThread().getName());
         try {
-            Thread.sleep(5000);
+            Thread.sleep(5 * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
