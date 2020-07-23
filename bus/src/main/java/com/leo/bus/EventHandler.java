@@ -1,42 +1,30 @@
 package com.leo.bus;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
 /**
- * <p>Date:2020/7/17.6:16 PM</p>
+ * <p>Date:2020/7/23.3:07 PM</p>
  * <p>Author:leo</p>
- * <p>Desc:事件消费者和Method 一对一关系
- * </p>
+ * <p>Desc:</p>
  */
-class EventHandler {
-    //消息接收者
-    Object target;
-    Method method;
-    //线程标识
-    int threadMode;
-    Class<?> eventType;
+public class EventHandler {
+    Object receiver;
+    EventMethodInfo methodInfo;
 
-    public EventHandler(Object target, Method method) {
-        this.target = target;
-        this.method = method;
+    public EventHandler(Object receiver, EventMethodInfo methodInfo) {
+        this.receiver = receiver;
+        this.methodInfo = methodInfo;
     }
-
 
     @Override
     public int hashCode() {
-        return method.hashCode();
+        return methodInfo.hashCode();
     }
 
-    private int hash(Object... values) {
-        return Arrays.hashCode(values);
-    }
 
     @Override
     public String toString() {
         return "EventHandler{" +
-                "target=" + target.getClass().getName() +
-                ", method=" + method.getName() +
+                "target=" + receiver.getClass().getName() +
+                ", methodInfo=" + methodInfo.toString() +
                 '}';
     }
 }

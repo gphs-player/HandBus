@@ -19,7 +19,8 @@ import java.util.Objects;
  */
 public class HandBus {
 
-    //外部类加载的时候不会加载内部类
+    private static HandBus mInstance;
+
     private static class Holder {
         static HandBus INSTANCE = new HandBus();
     }
@@ -30,21 +31,32 @@ public class HandBus {
     }
 
     public static HandBus getInstance() {
-        return Holder.INSTANCE;
+        if (mInstance == null) {
+            mInstance = Holder.INSTANCE;
+        }
+        return mInstance;
+    }
+
+    public void installIndex(IndexFinder index) {
+        this.mIndexContainer = index;
+        mHasEventIndex = mIndexContainer != null;
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // 容器
+    // var
     ///////////////////////////////////////////////////////////////////////////
 
+    private IndexFinder mIndexContainer;
+    //编译期已经注册了Event映射Map，不需要再次反射匹配
+    private boolean mHasEventIndex;
     /**
      * 根据事件类型去找接收者，不必遍历
      * Event - <Activity,Method>
      */
     private Map<String, List<EventHandler>> mEventMappings = new HashMap<>();
 
-    private  Process mMainThreadHandler;
-    private  Process mBackgroundHandler;
+    private Process mMainThreadHandler;
+    private Process mBackgroundHandler;
 
     ///////////////////////////////////////////////////////////////////////////
     // API
@@ -55,42 +67,55 @@ public class HandBus {
      */
     public void register(Object receiver) {
         if (receiver == null) return;
-        List<EventHandler> eventMethods = findEventMethod(receiver);
+        List<EventMethodInfo> eventMethods = findEventMethod(receiver);
         addReceiver(receiver, eventMethods);
     }
 
-    private void addReceiver(Object receiver, Collection<EventHandler> eventMethods) {
-        for (EventHandler eventMethod : eventMethods) {
+    private void addReceiver(Object receiver, Collection<EventMethodInfo> eventMethods) {
+        for (EventMethodInfo eventMethod : eventMethods) {
             //以事件类型维护映射关系
             Class<?> eventType = eventMethod.eventType;
             //已经有接受者，则继续添加新的接收者
+            EventHandler eventHandler = new EventHandler(receiver, eventMethod);
             if (mEventMappings.containsKey(eventType.toString())) {
                 List<EventHandler> receivers = mEventMappings.get(eventType.toString());
                 // 可能尚未注册过 或者已经清空
                 if (receivers == null || receivers.size() == 0) {
                     receivers = new ArrayList<>();
                     mEventMappings.put(eventType.toString(), receivers);
-                    receivers.add(eventMethod);
+                    receivers.add(eventHandler);
                 } else {
                     //已经注册，忘记反注册, 报错提醒
                     if (receivers.contains(eventMethod)) {
                         throw new IllegalStateException(receiver.getClass().getName() + " already  register in HandBus");
                     } else {
-                        receivers.add(eventMethod);
+                        receivers.add(eventHandler);
                     }
                 }
             } else {
                 //没有接收者,新添加
                 List<EventHandler> receivers = new ArrayList<>();
-                receivers.add(eventMethod);
+                receivers.add(eventHandler);
                 mEventMappings.put(eventType.toString(), receivers);
             }
         }
+        log("Register Events:\n" +mEventMappings.toString() );
+
     }
 
-    private List<EventHandler> findEventMethod(Object target) {
+    private List<EventMethodInfo> findEventMethod(Object target) {
+        List<EventMethodInfo> result;
         Class<?> receiver = target.getClass();
-        List<EventHandler> result = new ArrayList<>();
+        if (mHasEventIndex) {
+            result = mIndexContainer.find(receiver);
+        } else {
+            result = usingReflectFind(receiver);
+        }
+        return result;
+    }
+
+    private List<EventMethodInfo> usingReflectFind(Class<?> receiver) {
+        List<EventMethodInfo> result = new ArrayList<>();
         Method[] methods = receiver.getDeclaredMethods();
         //遍历接受者的所有方法
         for (Method method : methods) {
@@ -105,9 +130,10 @@ public class HandBus {
                 //方法参数只能是1个
                 if (method.getParameterTypes().length == 1) {
                     Receive annotation = method.getAnnotation(Receive.class);
-                    EventHandler handler = new EventHandler(target,method);
-                    handler.threadMode = Objects.requireNonNull(annotation).threadMode();
-                    handler.eventType = method.getParameterTypes()[0];
+                    Method methodRegister = method;
+                    int threadMode = Objects.requireNonNull(annotation).threadMode();
+                    Class<?> eventType = method.getParameterTypes()[0];
+                    EventMethodInfo handler = new EventMethodInfo(methodRegister,threadMode,eventType);
                     result.add(handler);
                 } else {
                     throw new IllegalStateException("@Receive 修饰的方法参数必须为1");
@@ -131,7 +157,7 @@ public class HandBus {
             int receiverSize = eventHandlers.size();
             for (int i = 0; i < receiverSize; i++) {
                 EventHandler eventHandler = eventHandlers.get(i);
-                if (eventHandler.target.getClass().toString().equals(receiver.getClass().toString())) {
+                if (eventHandler.receiver.getClass().toString().equals(receiver.getClass().toString())) {
                     eventHandlers.remove(eventHandler);
                     i--;
                     receiverSize--;
@@ -148,10 +174,10 @@ public class HandBus {
         if (receiverMaps == null || receiverMaps.size() == 0) return;
         //所有可以处理该事件的接收者
         for (final EventHandler receiver : receiverMaps) {
-            switch (receiver.threadMode) {
+            switch (receiver.methodInfo.threadMode) {
                 default:
                 case ThreadMode.THREAD_DEFAULT:
-                    runMethodDirect(receiver,event);
+                    runMethodDirect(receiver, event);
                     break;
                 case ThreadMode.THREAD_MAIN:
                     if (isMainThread) {
@@ -173,9 +199,9 @@ public class HandBus {
         }
     }
 
-     void runMethodDirect(EventHandler receiver, Object event) {
+    void runMethodDirect(EventHandler target, Object event) {
         try {
-            receiver.method.invoke(receiver.target,event);
+            target.methodInfo.method.invoke(target.receiver, event);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {

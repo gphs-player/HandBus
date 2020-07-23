@@ -6,5 +6,5 @@ package com.leo.bus;
  * <p>Desc:</p>
  */
 public interface Process {
-    void process(EventHandler eventHandler,Object eventEntity);
+    void process(EventHandler eventHandler, Object eventEntity);
 }

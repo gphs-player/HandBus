@@ -5,7 +5,7 @@ package com.leo.bus;
  * <p>Author:leo</p>
  * <p>Desc:</p>
  */
-class BusException extends RuntimeException {
+public class BusException extends RuntimeException {
 
     public BusException() {
     }

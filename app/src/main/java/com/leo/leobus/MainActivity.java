@@ -32,6 +32,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         HandLogger.logDebug(HandBus.class.toString());
+        HandBus.getInstance().installIndex(new BusIndexFinder());
         HandBus.getInstance().register(this);
 //        EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
         findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
