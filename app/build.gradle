@@ -14,7 +14,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [handBusIndex: "com.leo.leobus.event.MyEventBusIndex"]
+                arguments = [handBusIndex: "AutoEventBusIndex"]
             }
         }
 

@@ -2,6 +2,9 @@ package com.leo.bus;
 
 import android.os.Looper;
 
+import com.leo.annotation.Receive;
+import com.leo.annotation.ThreadMode;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -99,7 +102,7 @@ public class HandBus {
                 mEventMappings.put(eventType.toString(), receivers);
             }
         }
-        log("Register Events:\n" +mEventMappings.toString() );
+        log("Register Events:\n" + mEventMappings.toString());
 
     }
 
@@ -111,6 +114,7 @@ public class HandBus {
         } else {
             result = usingReflectFind(receiver);
         }
+        result = result == null ? new ArrayList<>() : result;
         return result;
     }
 
@@ -125,7 +129,7 @@ public class HandBus {
                         + " for receiver " + receiver.getCanonicalName());
                 //方法必须public修饰
                 if ((method.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
-                    throw new IllegalStateException("@Receive 修饰的方法必须为public");
+                    throw new BusException("the @Receive method [" + method.getName() + "] must be public, non-static, and non-abstract");
                 }
                 //方法参数只能是1个
                 if (method.getParameterTypes().length == 1) {
@@ -133,10 +137,10 @@ public class HandBus {
                     Method methodRegister = method;
                     int threadMode = Objects.requireNonNull(annotation).threadMode();
                     Class<?> eventType = method.getParameterTypes()[0];
-                    EventMethodInfo handler = new EventMethodInfo(methodRegister,threadMode,eventType);
+                    EventMethodInfo handler = new EventMethodInfo(methodRegister, threadMode, eventType);
                     result.add(handler);
                 } else {
-                    throw new IllegalStateException("@Receive 修饰的方法参数必须为1");
+                    throw new BusException("the @Receive method [" + method.getName() + "] must have exactly 1 parameter ");
                 }
             } else {
                 log("method  " + method.getName() + " in " + receiver.getCanonicalName() + " ignored");

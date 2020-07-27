@@ -1,3 +1,4 @@
+include ':annotation'
 include ':busapt'
 include ':bus'
 include ':app'

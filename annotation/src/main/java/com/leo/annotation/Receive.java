@@ -1,4 +1,4 @@
-package com.leo.bus;
+package com.leo.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,22 +1,17 @@
 package com.leo.leobus;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
-import android.util.Printer;
-import android.view.Choreographer;
 import android.view.View;
 
 import androidx.annotation.RequiresApi;
 
+import com.leo.annotation.Receive;
+import com.leo.annotation.ThreadMode;
+import com.leo.bus.AutoEventBusIndex;
 import com.leo.bus.HandBus;
 import com.leo.bus.HandLogger;
-import com.leo.bus.Receive;
-import com.leo.bus.ThreadMode;
 import com.leo.leobus.event.IntEvent;
 import com.leo.leobus.event.JsonEvent;
 import com.leo.leobus.event.OtherEvent;
@@ -32,15 +27,11 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         HandLogger.logDebug(HandBus.class.toString());
-        HandBus.getInstance().installIndex(new BusIndexFinder());
+        HandBus.getInstance().installIndex(new AutoEventBusIndex());
         HandBus.getInstance().register(this);
-//        EventBus.builder().addIndex(new MyEventBusIndex()).installDefaultEventBus();
-        findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,EventActivity1.class));
-            }
-        });
+
+
+        findViewById(R.id.send).setOnClickListener(v -> startActivity(new Intent(MainActivity.this,EventActivity1.class)));
     }
 
     @Override
@@ -60,8 +51,8 @@ public class MainActivity extends BaseActivity {
         log(this.toString() +"--" + msg +"\n休眠结束");
 
     }
-    @Receive
-    public void doIntEvent(IntEvent msg) {
+    @Receive(threadMode = ThreadMode.THREAD_MAIN)
+    public  void doIntTwoArgEvent(IntEvent msg) {
         log(this.toString() +"--" + msg);
     }
 
@@ -69,7 +60,7 @@ public class MainActivity extends BaseActivity {
     public void doJsonEvent(JsonEvent msg) {
         log(this.toString() +"--" + msg);
     }
-    @Receive
+    @Receive(threadMode = ThreadMode.THREAD_BACKGROUND)
     public void doOtherEvent(OtherEvent msg) {
         log(this.toString() +"--" + msg);
     }

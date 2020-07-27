@@ -4,9 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.leo.annotation.Receive;
+import com.leo.annotation.ThreadMode;
 import com.leo.bus.HandBus;
-import com.leo.bus.Receive;
-import com.leo.bus.ThreadMode;
 import com.leo.leobus.event.IntEvent;
 import com.leo.leobus.event.JsonEvent;
 import com.leo.leobus.event.OtherEvent;
@@ -61,6 +61,7 @@ public class EventActivity1 extends BaseActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        log(this.toString() +"--" + msg +"\n休眠结束");
     }
     @Receive
     public void doEventOther(OtherEvent msg) {

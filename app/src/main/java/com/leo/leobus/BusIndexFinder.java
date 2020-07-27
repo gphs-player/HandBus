@@ -1,11 +1,12 @@
 package com.leo.leobus;
 
+import com.leo.annotation.ThreadMode;
 import com.leo.bus.EventIndexInfoWrap;
 import com.leo.bus.EventMethodInfo;
 import com.leo.bus.IndexFinder;
 import com.leo.bus.EventIndexInfo;
-import com.leo.bus.ThreadMode;
 import com.leo.leobus.event.StringEvent;
+
 
 import java.util.HashMap;
 import java.util.List;

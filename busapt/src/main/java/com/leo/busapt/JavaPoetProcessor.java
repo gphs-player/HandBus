@@ -2,6 +2,8 @@ package com.leo.busapt;
 
 
 
+import com.squareup.javapoet.ArrayTypeName;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
@@ -53,6 +55,7 @@ public class JavaPoetProcessor extends AbstractProcessor {
         //  $N for Names
         //  MethodSpec hexDigit = MethodSpec.methodBuilder("hexDigit")
         //  .addStatement("result[0] = $N((b >>> 4) & 0xf)", hexDigit)
+
         MethodSpec methodSpec = MethodSpec.methodBuilder("main")
                 .returns(void.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -64,7 +67,7 @@ public class JavaPoetProcessor extends AbstractProcessor {
                 //添加类型及语句
                 .addStatement("$T.out.println($S)", System.class, "Hello JavaPoet")
                 //添加流程控制
-                .addStatement("int isFinish")
+                .addStatement("int isFinish = 0")
                 .beginControlFlow("while(isFinish < 5)")
                 .addStatement("\t System.out.println(isFinish);\nisFinish++")
                 .endControlFlow()
@@ -76,7 +79,7 @@ public class JavaPoetProcessor extends AbstractProcessor {
 
                 .build();
         try {
-            builder.writeTo(System.err);
+            builder.writeTo(filer);
         } catch (IOException e) {
             e.printStackTrace();
         }
