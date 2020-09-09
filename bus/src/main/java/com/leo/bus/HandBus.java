@@ -125,8 +125,7 @@ public class HandBus {
         for (Method method : methods) {
             //方法确定是public的
             if (method.getAnnotation(Receive.class) != null) {
-                log("find method " + method.getName()
-                        + " for receiver " + receiver.getCanonicalName());
+                log("find method " + method.getName() + " for receiver " + receiver.getCanonicalName());
                 //方法必须public修饰
                 if ((method.getModifiers() & Modifier.PUBLIC) != Modifier.PUBLIC) {
                     throw new BusException("the @Receive method [" + method.getName() + "] must be public, non-static, and non-abstract");

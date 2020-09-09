@@ -23,3 +23,14 @@
 
 * APT 收集订阅者信息
 
+
+
+### 其他
+
+#### 1.debug APT 
+
+1.添加默认remote
+
+2../gradlew --no-daemon -Dorg.gradle.debug=true :app:clean :app:compileDebugJavaWithJavac
+
+3.打断点，点击debug run 按钮

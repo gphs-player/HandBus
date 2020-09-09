@@ -23,7 +23,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-@SupportedAnnotationTypes(value = "com.leo.bus.Receive")
+@SupportedAnnotationTypes(value = "com.leo.annotation.Receive")
 public class JavaPoetProcessor extends AbstractProcessor {
 
     private Types typeUtils;
